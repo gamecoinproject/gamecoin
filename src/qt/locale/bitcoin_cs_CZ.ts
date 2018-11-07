@@ -86,8 +86,8 @@
         <translation>Změnit heslo k šifrování peněženky</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation>Bitcoin</translation>
+        <source>Gamecoin</source>
+        <translation>Gamecoin</translation>
     </message>
     <message>
         <source>&amp;File</source>
