@@ -38,7 +38,7 @@
   <true/>
 
   <key>CFBundleIdentifier</key>
-  <string>com.gamecoin.Gamecoin-Qt</string>
+  <string>org.gamecoinproject.Gamecoin-Qt</string>
 
   <key>CFBundleURLTypes</key>
   <array>
@@ -46,7 +46,7 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
       <key>CFBundleURLName</key>
-      <string>com.gamecoin.BitcoinPayment</string>
+      <string>org.gamecoinproject.BitcoinPayment</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>gamecoin</string>
@@ -58,7 +58,7 @@
   <array>
     <dict>
       <key>UTTypeIdentifier</key>
-      <string>com.gamecoin.paymentrequest</string>
+      <string>org.gamecoinproject.paymentrequest</string>
       <key>UTTypeDescription</key>
       <string>Gamecoin payment request</string>
       <key>UTTypeConformsTo</key>
@@ -84,7 +84,7 @@
       <string>Editor</string>
       <key>LSItemContentTypes</key>
       <array>
-        <string>com.gamecoin.paymentrequest</string>
+        <string>org.gamecoinproject.paymentrequest</string>
       </array>
       <key>LSHandlerRank</key>
       <string>Owner</string>

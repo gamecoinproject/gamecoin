@@ -13,7 +13,7 @@
 - (NSString *)__bundleIdentifier
 {
     if (self == [NSBundle mainBundle]) {
-        return @"com.gamecoin.Gamecoin-Qt";
+        return @"org.gamecoinproject.Gamecoin-Qt";
     } else {
         return [self __bundleIdentifier];
     }

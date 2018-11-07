@@ -49,7 +49,7 @@ static const int MAX_URI_LENGTH = 255;
 #define SPINNER_FRAMES 36
 
 #define QAPP_ORG_NAME "Gamecoin"
-#define QAPP_ORG_DOMAIN "gamecoin.com"
+#define QAPP_ORG_DOMAIN "gamecoinproject.org"
 #define QAPP_APP_NAME_DEFAULT "Gamecoin-Qt"
 #define QAPP_APP_NAME_TESTNET "Gamecoin-Qt-testnet"
 
