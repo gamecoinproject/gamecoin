@@ -13,26 +13,49 @@
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
+    int64_t nTargetTimespan = params.nPowTargetTimespan;
+    int64_t nTargetSpacing = params.nPowTargetSpacing;
+    int64_t nInterval = nTargetTimespan / nTargetSpacing;
+    int64_t nReTargetHistoryFact = 12;
 
     // Genesis block
     if (pindexLast == NULL)
         return nProofOfWorkLimit;
 
+    // From block 25200 to 64007, reassess the difficulty every 48 blocks
+    if(pindexLast->nHeight >= 25199 && pindexLast->nHeight < 64007)
+    {
+        nTargetTimespan = 2 * 60 * 60; // 2 hours
+        nTargetSpacing = 2.5 * 60; // 2.5 minutes
+        nInterval = nTargetTimespan / nTargetSpacing;
+    }
+    // From block 64008 reassess the difficulty every 12 blocks
+    else if(pindexLast->nHeight >= 64007)
+    {
+        nTargetTimespan = 30 * 60; // 30 minutes
+        nTargetSpacing = 2.5 * 60; // 2.5 minutes
+        nInterval = nTargetTimespan / nTargetSpacing;
+        if(pindexLast->nHeight < 68999)
+            nReTargetHistoryFact = 48;
+        else
+            nReTargetHistoryFact = 4;
+    }
+
     // Only change once per difficulty adjustment interval
-    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
+    if ((pindexLast->nHeight+1) % nInterval != 0)
     {
         if (params.fPowAllowMinDifficultyBlocks)
         {
             // Special difficulty rule for testnet:
             // If the new block's timestamp is more than 2* 10 minutes
             // then allow mining of a min-difficulty block.
-            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
+            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + nTargetSpacing*2)
                 return nProofOfWorkLimit;
             else
             {
                 // Return the last non-special-min-difficulty-rules-block
                 const CBlockIndex* pindex = pindexLast;
-                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
+                while (pindex->pprev && pindex->nHeight % nInterval != 0 && pindex->nBits == nProofOfWorkLimit)
                     pindex = pindex->pprev;
                 return pindex->nBits;
             }
@@ -40,34 +63,63 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return pindexLast->nBits;
     }
 
-    // Go back by what we want to be 14 days worth of blocks
-    int nHeightFirst = pindexLast->nHeight - (params.DifficultyAdjustmentInterval()-1);
-    assert(nHeightFirst >= 0);
-    const CBlockIndex* pindexFirst = pindexLast->GetAncestor(nHeightFirst);
+    // This fixes an issue where a 51% attack can change difficulty at will.
+    // Go back the full period unless it's the first retarget after genesis. Code courtesy of Art Forz
+    int blockstogoback = nInterval-1;
+    if ((pindexLast->nHeight+1) != nInterval)
+        blockstogoback = nInterval;
+    if ((pindexLast->nHeight >= 62400 && pindexLast->nHeight < 64000) || pindexLast->nHeight >= 64595)
+        blockstogoback = nReTargetHistoryFact * nInterval;
+
+    const CBlockIndex* pindexFirst = pindexLast;
+    for (int i = 0; pindexFirst && i < blockstogoback; i++)
+        pindexFirst = pindexFirst->pprev;
     assert(pindexFirst);
 
-    return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
-}
-
-unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
-{
     if (params.fPowNoRetargeting)
         return pindexLast->nBits;
 
     // Limit adjustment step
-    int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
-    if (nActualTimespan < params.nPowTargetTimespan/4)
-        nActualTimespan = params.nPowTargetTimespan/4;
-    if (nActualTimespan > params.nPowTargetTimespan*4)
-        nActualTimespan = params.nPowTargetTimespan*4;
+    int64_t nActualTimespan = 0;
+    if (pindexLast->nHeight >= 64595)
+        nActualTimespan = (pindexLast->GetBlockTime() - pindexFirst->GetBlockTime())/nReTargetHistoryFact;
+    else
+        nActualTimespan = pindexLast->GetBlockTime() - pindexFirst->GetBlockTime();
+
+    if(pindexLast->nHeight < 25199 || (pindexLast->nHeight >= 60000 && pindexLast->nHeight < 64079))
+    {
+        if (nActualTimespan < nTargetTimespan/4)
+            nActualTimespan = nTargetTimespan/4;
+        if (nActualTimespan > nTargetTimespan*4)
+            nActualTimespan = nTargetTimespan*4;
+    }
+    else if(pindexLast->nHeight >= 64079)
+    {
+        if (nActualTimespan < nTargetTimespan/1.1)
+            nActualTimespan = nTargetTimespan/1.1;
+        if (nActualTimespan > nTargetTimespan*1.1)
+            nActualTimespan = nTargetTimespan*1.1;
+    }
+    else
+    {
+        if (nActualTimespan < nTargetTimespan/2)
+            nActualTimespan = nTargetTimespan/2;
+        if (nActualTimespan > nTargetTimespan*8)
+            nActualTimespan = nTargetTimespan*8;
+    }
 
     // Retarget
-    const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
     arith_uint256 bnNew;
     bnNew.SetCompact(pindexLast->nBits);
+    bool fShift = bnNew.bits() > 235;
+    if (fShift)
+        bnNew >>= 1;
     bnNew *= nActualTimespan;
-    bnNew /= params.nPowTargetTimespan;
+    bnNew /= nTargetTimespan;
+    if (fShift)
+        bnNew <<= 1;
 
+    const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
     if (bnNew > bnPowLimit)
         bnNew = bnPowLimit;
 
