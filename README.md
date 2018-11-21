@@ -1,7 +1,7 @@
 Gamecoin Core integration/staging tree
 =====================================
 
-https://http://www.gamecoinproject.org/
+http://www.gamecoinproject.org/
 
 What is Gamecoin?
 ----------------
