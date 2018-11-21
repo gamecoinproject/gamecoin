@@ -1,27 +1,21 @@
-Bitcoin Core integration/staging tree
+Gamecoin Core integration/staging tree
 =====================================
 
-[![Build Status](https://travis-ci.org/bitcoin/bitcoin.svg?branch=master)](https://travis-ci.org/bitcoin/bitcoin)
+https://http://www.gamecoinproject.org/
 
-https://bitcoincore.org
-
-What is Bitcoin?
+What is Gamecoin?
 ----------------
 
-Bitcoin is an experimental digital currency that enables instant payments to
-anyone, anywhere in the world. Bitcoin uses peer-to-peer technology to operate
-with no central authority: managing transactions and issuing money are carried
-out collectively by the network. Bitcoin Core is the name of open source
-software which enables the use of this currency.
+GameCoin (GME) is a cryptocurrency built on the premise of quick confirmation times and low transaction fees. It is purpose-built for the sports and gaming industries. From ticket sales to in-game purchases. Gamecoin is a community supported coin ready to play.
 
 For more information, as well as an immediately useable, binary version of
-the Bitcoin Core software, see https://bitcoin.org/en/download, or read the
-[original whitepaper](https://bitcoincore.org/bitcoin.pdf).
+the Gamecoin Core software, see https://github.com/gamecoinproject/gamecoin/releases, or read the
+[original whitepaper](http://wiki.gamecoinproject.org/index.php/GameCoin_Whitepaper).
 
 License
 -------
 
-Bitcoin Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
+Gamecoin Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
 information or see https://opensource.org/licenses/MIT.
 
 Development Process
